@@ -227,7 +227,13 @@ contract Heap is AccessControlUpgradeable {
 
             if (IERC1155(token).balanceOf(seller, tokenId) > 0) {
                 nodes[i - 1] = heap[1].sellOrderIndex;
+            } else {
+                i--;
+                if (heap.length == 2) {
+                    break;
+                }
             }
+
             heap[1] = heap[heap.length - 1];
             assembly {
                 mstore(heap, sub(mload(heap), 1))
