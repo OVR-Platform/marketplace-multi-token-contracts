@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.17;
 
-
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
 
@@ -87,11 +86,14 @@ contract Sales is Store, TokenUtils {
             require(tokenId.length == 1, "S02");
             // if ERC721 save index in saleIndexes721 else save order in heap
             if (assetType(token) == ItemType.ERC721) {
-                require(saleIndexes721[token][tokenId[0]] == 0 ||
-                 sales[saleIndexes721[token][tokenId[0]]].seller != _msgSender(), "S11");
+                require(
+                    saleIndexes721[token][tokenId[0]] == 0 ||
+                        sales[saleIndexes721[token][tokenId[0]]].seller !=
+                        _msgSender(),
+                    "S11"
+                );
 
                 saleIndexes721[token][tokenId[0]] = index;
-                
             } else {
                 heap.insertNode(token, tokenId[0], price, index);
             }
@@ -141,7 +143,6 @@ contract Sales is Store, TokenUtils {
      */
 
     function buy(uint256 index, uint256 amount) external whenNotPaused {
-     
         require(sales[index].seller != _msgSender(), "O02");
         require(sales[index].seller != address(0), "O03");
         for (uint256 i = 0; i < sales[index].tokenId.length; i++) {

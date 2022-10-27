@@ -93,6 +93,9 @@ describe("Sales - TEST", async () => {
         "\t\t\t",
         Utils.displayTime(Number(currentBlock.toString()))
       );
+      //add store to heap
+      await heap.addStore(root.address);
+      console.log("\t\t\tRoot added to Heap");
     });
   });
 
@@ -123,7 +126,7 @@ describe("Sales - TEST", async () => {
 
       await assets3D
         .connect(owner)
-        .mintBatch(addr5.address, [4, 5, 6], [9, 9, 9], "0x");
+        .mintBatch(addr5.address, [4, 5, 6, 20], [9, 9, 9, 1], "0x");
 
       await assets3D
         .connect(owner)
@@ -136,6 +139,8 @@ describe("Sales - TEST", async () => {
       await assets3D
         .connect(owner)
         .mintBatch(addr16.address, [11, 12], [1000, 1000], "0x");
+
+      await assets3D.connect(owner).mintBatch(addr9.address, [20], [5], "0x");
     });
 
     it("Mint OVR Tokens", async () => {
@@ -152,6 +157,7 @@ describe("Sales - TEST", async () => {
     it("Approve Tokens", async () => {
       await assets3D.connect(addr1).setApprovalForAll(root.address, true);
       await assets3D.connect(addr5).setApprovalForAll(root.address, true);
+      await assets3D.connect(addr9).setApprovalForAll(root.address, true);
 
       await assets3D.connect(addr14).setApprovalForAll(root.address, true);
       await assets3D.connect(addr15).setApprovalForAll(root.address, true);
@@ -360,8 +366,88 @@ describe("Sales - TEST", async () => {
         console.log("Test", Utils.fromWei(sales[j]["price"]));
       }
     });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr9)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr9)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr9)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr9)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr9)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should PASS transferFrom() 5 item id 20 to addr19", async () => {
+      await assets3D
+        .connect(addr9)
+        .safeTransferFrom(addr9.address, addr17.address, 20, 5, "0x");
+    });
+    it("Should PASS viewSmallestId() id20", async () => {
+      const smallestId = await root.viewSalesByAsset(assets3D.address, 20, 6);
+      console.log("smallestId", smallestId);
+    });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr5)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should PASS viewSmallestId() id20", async () => {
+      const smallestId = await root.viewSalesByAsset(assets3D.address, 20, 6);
+      console.log("smallestId", smallestId);
+    });
   });
   describe("ERC721 - Tests", () => {
-    // TODO
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr1)
+        .createSale(ovrLand.address, [1], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should FAIL createSale() BASIC Order", async () => {
+      await expect(
+        root
+          .connect(addr1)
+          .createSale(ovrLand.address, [1], Utils.toWei("0.01"), [1], 0)
+      ).to.be.revertedWith("S11");
+    });
+    it("Should FAIL createSale() BASIC Order", async () => {
+      await expect(
+        root
+          .connect(addr3)
+          .createSale(ovrLand.address, [1], Utils.toWei("0.01"), [1], 0)
+      ).to.be.revertedWith("S09");
+    });
+    it("Should FAIL cancelSale() BASIC Order", async () => {
+      const salesCount = (await root.salesCount()) - 1;
+      await expect(
+        root.connect(addr2).cancelSale(salesCount)
+      ).to.be.revertedWith("S15");
+    });
+    it("Should PASS cancelSale() BASIC Order", async () => {
+      const salesCount = (await root.salesCount()) - 1;
+      await root.connect(addr1).cancelSale(salesCount);
+    });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr1)
+        .createSale(ovrLand.address, [1], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should PASS buy() BASIC Order", async () => {
+      const salesCount = (await root.salesCount()) - 1;
+      await root.connect(addr2).buy(salesCount, 1);
+    });
   });
 });

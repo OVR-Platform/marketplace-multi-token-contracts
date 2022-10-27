@@ -2,6 +2,9 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+//import IStore
+import "../interfaces/IStore.sol";
 
 // Author: Jacopo Mosconi
 
@@ -30,7 +33,8 @@ contract Heap is AccessControlUpgradeable {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     }
 
-    
+    IStore public store;
+
     //token addr => token id => price
     mapping(address => mapping(uint256 => Node[])) heapPrice;
     //token address => tokenId => price => index
@@ -219,7 +223,11 @@ contract Heap is AccessControlUpgradeable {
 
         Node[] memory heap = heapPrice[token][tokenId];
         for (uint256 i = 1; i <= length; i++) {
-            nodes[i - 1] = heap[1].sellOrderIndex;
+            (address seller, , , , , ) = store.sales(heap[1].sellOrderIndex);
+
+            if (IERC1155(token).balanceOf(seller, tokenId) > 0) {
+                nodes[i - 1] = heap[1].sellOrderIndex;
+            }
             heap[1] = heap[heap.length - 1];
             assembly {
                 mstore(heap, sub(mload(heap), 1))
@@ -251,8 +259,28 @@ contract Heap is AccessControlUpgradeable {
                 }
             }
         }
+        //delete from nodes if it is 0
+        uint256 count = 0;
+        for (uint256 i = 0; i < nodes.length; i++) {
+            if (nodes[i] != 0) {
+                count++;
+            }
+        }
+        uint256[] memory newNodes = new uint256[](count);
+        uint256 j = 0;
+        for (uint256 i = 0; i < nodes.length; i++) {
+            if (nodes[i] != 0) {
+                newNodes[j] = nodes[i];
+                j++;
+            }
+        }
 
-        return nodes;
+        return newNodes;
+    }
+
+    //function admin to set store address
+    function addStore(IStore _store) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        store = _store;
     }
 
     //function to set default admin role
