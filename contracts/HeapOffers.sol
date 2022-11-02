@@ -2,38 +2,14 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-//import IStore
-import "../interfaces/IStore.sol";
 
 // Author: Jacopo Mosconi
+// Binary Max Heap
 
-/*
-implementation of binary min heap
-what is it (wikipedia): https:// en.wikipedia.org/wiki/Binary_heap
-explination: a heap is a binary tree where the parent node is always smaller than the child nodes
-the root node is always the smallest node
-the heap is stored in an array, the parent node is stored at index i, 
-the left child is stored at index 2*i and the right child is stored at index 2*i+1
-to insert a node, we add it to the end of the array and then swap it with 
-its parent node until it is smaller than its parent node
-to delete a node, we swap it with the last node in the array and then swap 
-it with its smallest child node until it is smaller than both of its child nodes
-
-Logarithmic Time Complexity:
-insertNode is O(log n)
-updateNode is O(log n)
-deleteNode is O(log n)
-deleteMin is O(log n)
-getMin is O(1)
-*/
-
-contract Heap is AccessControlUpgradeable {
+contract HeapOffers is AccessControlUpgradeable {
     constructor() {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     }
-
-    IStore public store;
 
     //token addr => token id => price
     mapping(address => mapping(uint256 => Node[])) heapPrice;
@@ -41,7 +17,7 @@ contract Heap is AccessControlUpgradeable {
     mapping(address => mapping(uint256 => mapping(uint256 => uint256))) heapIndex;
 
     struct Node {
-        uint256 sellOrderIndex;
+        uint256 offerOrderIndex;
         uint256 price;
     }
 
@@ -54,14 +30,14 @@ contract Heap is AccessControlUpgradeable {
         address token,
         uint256 tokenId,
         uint256 price,
-        uint256 sellOrderIndex
+        uint256 offerOrderIndex
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         if (heapPrice[token][tokenId].length == 0) {
             initHeap(token, tokenId);
         }
-        heapPrice[token][tokenId].push(Node(sellOrderIndex, price));
+        heapPrice[token][tokenId].push(Node(offerOrderIndex, price));
         uint256 index = heapPrice[token][tokenId].length - 1;
-        heapIndex[token][tokenId][sellOrderIndex] = index;
+        heapIndex[token][tokenId][offerOrderIndex] = index;
         heapifyUp(token, tokenId, index);
     }
 
@@ -69,33 +45,20 @@ contract Heap is AccessControlUpgradeable {
     function deleteNode(
         address token,
         uint256 tokenId,
-        uint256 sellOrderIndex
+        uint256 offerOrderIndex
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        uint256 index = heapIndex[token][tokenId][sellOrderIndex];
+        uint256 index = heapIndex[token][tokenId][offerOrderIndex];
         uint256 lastIndex = heapPrice[token][tokenId].length - 1;
         Node memory lastNode = heapPrice[token][tokenId][lastIndex];
         heapPrice[token][tokenId][index] = lastNode;
         heapPrice[token][tokenId].pop();
-        heapIndex[token][tokenId][lastNode.sellOrderIndex] = index;
-        delete heapIndex[token][tokenId][sellOrderIndex];
+        heapIndex[token][tokenId][lastNode.offerOrderIndex] = index;
+        delete heapIndex[token][tokenId][offerOrderIndex];
         heapifyDown(token, tokenId, index);
     }
 
-    // update node
-    function updateNode(
-        address token,
-        uint256 tokenId,
-        uint256 price,
-        uint256 sellOrderIndex
-    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        uint256 index = heapIndex[token][tokenId][sellOrderIndex];
-        heapPrice[token][tokenId][index].price = price;
-        heapifyUp(token, tokenId, index);
-        heapifyDown(token, tokenId, index);
-    }
-
-    // get min node
-    function getMinNode(address token, uint256 tokenId)
+    // get max node
+    function getMaxNode(address token, uint256 tokenId)
         public
         view
         returns (Node memory)
@@ -107,14 +70,14 @@ contract Heap is AccessControlUpgradeable {
     function getNode(
         address token,
         uint256 tokenId,
-        uint256 sellOrderIndex
+        uint256 offerOrderIndex
     ) public view returns (Node memory) {
-        uint256 index = heapIndex[token][tokenId][sellOrderIndex];
+        uint256 index = heapIndex[token][tokenId][offerOrderIndex];
         return heapPrice[token][tokenId][index];
     }
 
     /**
-     * @dev heapify up: compare with parent node, if smaller, swap
+     * @dev heapify up: compare with parent node, if bigger, swap
      */
 
     function heapifyUp(
@@ -125,7 +88,7 @@ contract Heap is AccessControlUpgradeable {
         uint256 parentIndex = index / 2;
         while (parentIndex > 0) {
             if (
-                heapPrice[token][tokenId][parentIndex].price >
+                heapPrice[token][tokenId][parentIndex].price <
                 heapPrice[token][tokenId][index].price
             ) {
                 Node memory temp = heapPrice[token][tokenId][parentIndex];
@@ -134,10 +97,10 @@ contract Heap is AccessControlUpgradeable {
                 ][index];
                 heapPrice[token][tokenId][index] = temp;
                 heapIndex[token][tokenId][
-                    heapPrice[token][tokenId][parentIndex].sellOrderIndex
+                    heapPrice[token][tokenId][parentIndex].offerOrderIndex
                 ] = parentIndex;
                 heapIndex[token][tokenId][
-                    heapPrice[token][tokenId][index].sellOrderIndex
+                    heapPrice[token][tokenId][index].offerOrderIndex
                 ] = index;
                 index = parentIndex;
                 parentIndex = index / 2;
@@ -159,33 +122,33 @@ contract Heap is AccessControlUpgradeable {
         uint256 leftChildIndex = index * 2;
         uint256 rightChildIndex = index * 2 + 1;
         while (leftChildIndex < heapPrice[token][tokenId].length) {
-            uint256 minIndex = index;
+            uint256 maxIndex = index;
             if (
-                heapPrice[token][tokenId][minIndex].price >
+                heapPrice[token][tokenId][maxIndex].price <
                 heapPrice[token][tokenId][leftChildIndex].price
             ) {
-                minIndex = leftChildIndex;
+                maxIndex = leftChildIndex;
             }
             if (
                 rightChildIndex < heapPrice[token][tokenId].length &&
-                heapPrice[token][tokenId][minIndex].price >
+                heapPrice[token][tokenId][maxIndex].price <
                 heapPrice[token][tokenId][rightChildIndex].price
             ) {
-                minIndex = rightChildIndex;
+                maxIndex = rightChildIndex;
             }
-            if (minIndex != index) {
-                Node memory temp = heapPrice[token][tokenId][minIndex];
-                heapPrice[token][tokenId][minIndex] = heapPrice[token][tokenId][
+            if (maxIndex != index) {
+                Node memory temp = heapPrice[token][tokenId][maxIndex];
+                heapPrice[token][tokenId][maxIndex] = heapPrice[token][tokenId][
                     index
                 ];
                 heapPrice[token][tokenId][index] = temp;
                 heapIndex[token][tokenId][
-                    heapPrice[token][tokenId][minIndex].sellOrderIndex
-                ] = minIndex;
+                    heapPrice[token][tokenId][maxIndex].offerOrderIndex
+                ] = maxIndex;
                 heapIndex[token][tokenId][
-                    heapPrice[token][tokenId][index].sellOrderIndex
+                    heapPrice[token][tokenId][index].offerOrderIndex
                 ] = index;
-                index = minIndex;
+                index = maxIndex;
                 leftChildIndex = index * 2;
                 rightChildIndex = index * 2 + 1;
             } else {
@@ -194,7 +157,7 @@ contract Heap is AccessControlUpgradeable {
         }
     }
 
-    function getSmallest(
+    function getBestAssets(
         address token,
         uint256 tokenId,
         uint8 length
@@ -214,26 +177,16 @@ contract Heap is AccessControlUpgradeable {
             nodes = new uint256[](length);
         }
 
-        //if there is only 2 node, return the min(since the first node is 0)
+        //if there is only 2 node, return the max(since the first node is 0)
 
         if (heapPrice[token][tokenId].length == 2) {
-            nodes[0] = heapPrice[token][tokenId][1].sellOrderIndex;
+            nodes[0] = heapPrice[token][tokenId][1].offerOrderIndex;
             return nodes;
         }
 
         Node[] memory heap = heapPrice[token][tokenId];
         for (uint256 i = 1; i <= length; i++) {
-            (address seller, , , , , ) = store.sales(heap[1].sellOrderIndex);
-
-            if (IERC1155(token).balanceOf(seller, tokenId) > 0) {
-                nodes[i - 1] = heap[1].sellOrderIndex;
-            } else {
-                i--;
-                if (heap.length == 2) {
-                    break;
-                }
-            }
-
+            nodes[i - 1] = heap[1].offerOrderIndex;
             heap[1] = heap[heap.length - 1];
             assembly {
                 mstore(heap, sub(mload(heap), 1))
@@ -243,21 +196,21 @@ contract Heap is AccessControlUpgradeable {
             uint256 leftChildIndex = index * 2;
             uint256 rightChildIndex = index * 2 + 1;
             while (leftChildIndex < heap.length) {
-                uint256 minIndex = index;
-                if (heap[minIndex].price > heap[leftChildIndex].price) {
-                    minIndex = leftChildIndex;
+                uint256 maxIndex = index;
+                if (heap[maxIndex].price < heap[leftChildIndex].price) {
+                    maxIndex = leftChildIndex;
                 }
                 if (
                     rightChildIndex < heap.length &&
-                    heap[minIndex].price > heap[rightChildIndex].price
+                    heap[maxIndex].price < heap[rightChildIndex].price
                 ) {
-                    minIndex = rightChildIndex;
+                    maxIndex = rightChildIndex;
                 }
-                if (minIndex != index) {
-                    Node memory temp = heap[minIndex];
-                    heap[minIndex] = heap[index];
+                if (maxIndex != index) {
+                    Node memory temp = heap[maxIndex];
+                    heap[maxIndex] = heap[index];
                     heap[index] = temp;
-                    index = minIndex;
+                    index = maxIndex;
                     leftChildIndex = index * 2;
                     rightChildIndex = index * 2 + 1;
                 } else {
@@ -265,28 +218,8 @@ contract Heap is AccessControlUpgradeable {
                 }
             }
         }
-        //delete from nodes if it is 0
-        uint256 count = 0;
-        for (uint256 i = 0; i < nodes.length; i++) {
-            if (nodes[i] != 0) {
-                count++;
-            }
-        }
-        uint256[] memory newNodes = new uint256[](count);
-        uint256 j = 0;
-        for (uint256 i = 0; i < nodes.length; i++) {
-            if (nodes[i] != 0) {
-                newNodes[j] = nodes[i];
-                j++;
-            }
-        }
 
-        return newNodes;
-    }
-
-    //function admin to set store address
-    function addStore(IStore _store) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        store = _store;
+        return nodes;
     }
 
     //function to set default admin role

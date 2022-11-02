@@ -4,7 +4,11 @@ pragma solidity 0.8.17;
 interface IStore {
     function _freeIndexesSell(uint256) external view returns (uint256);
 
-    function accountOffers(address, uint256) external view returns (uint256);
+    function accountOffers(
+        address,
+        address,
+        uint256
+    ) external view returns (uint256);
 
     function addAllowedAddress(address _address, uint8 tokenType) external;
 

@@ -8,10 +8,33 @@ import {Offer} from "../libraries/Structs.sol";
 import {_now} from "../libraries/Utils.sol";
 import "../libraries/Events.sol";
 import {ItemType, OrderType} from "../libraries/Enums.sol";
+import "../interfaces/IHeap.sol";
 
 contract Offers is Store, TokenUtils {
-    function __Offers_init(uint256 _count) internal {
+    IHeap public heapOffer;
+
+    function __Offers_init(uint256 _count, address _heap) internal {
         offersCount = _count;
+        heapOffer = IHeap(_heap);
+    }
+
+    function viewOffersByAsset(
+        address token,
+        uint256 tokenId,
+        uint8 amount
+    ) public view returns (Offer[] memory) {
+        uint256[] memory indexes = heapOffer.getBestAssets(
+            token,
+            tokenId,
+            amount
+        );
+        Offer[] memory orders = new Offer[](indexes.length);
+
+        for (uint256 i = 0; i < indexes.length; i++) {
+            orders[i] = offers[indexes[i]];
+        }
+
+        return orders;
     }
 
     function buyOrderExist(uint256 index) private view {
@@ -30,22 +53,7 @@ contract Offers is Store, TokenUtils {
         uint256 _price
     ) external nonReentrant whenNotPaused {
         onlyAllowedAddress(_token);
-        uint256 accountOffersLength = accountOffers[_msgSender()].length;
-
-        if (accountOffersLength > 0) {
-            //check if the user has already a Offer for this token ID
-            // prettier-ignore
-            for (uint16 i = 0; i < accountOffersLength; i++) {
-            // prettier-ignore
-                if (offers[accountOffers[_msgSender()][i]].token == _token) {
-                    require(
-                        offers[accountOffers[_msgSender()][i]]
-                            .tokenId != _tokenId,
-                        "O07"
-                    );
-                }
-            }
-        }
+        require(!accountOffers[_token][_tokenId][_msgSender()], "O07");
 
         uint256 index;
 
@@ -61,7 +69,8 @@ contract Offers is Store, TokenUtils {
 
         // prettier-ignore
         offers[index] = Offer(_msgSender(), _token, _tokenId, _price, _now(), index);
-        accountOffers[_msgSender()].push(index);
+        accountOffers[_token][_tokenId][_msgSender()] = true;
+        heapOffer.insertNode(_token, _tokenId, _price, index);
 
         // prettier-ignore
         emit Events.OfferCreated( _msgSender(), _token, _tokenId, _price, index, _now());
@@ -74,17 +83,13 @@ contract Offers is Store, TokenUtils {
     function deleteOffer(uint256 index) external {
         buyOrderExist(index);
         require(offers[index].buyer == _msgSender(), "O08");
+        address token = offers[index].token;
+        uint256 tokenId = offers[index].tokenId;
+        accountOffers[token][tokenId][_msgSender()] = false;
 
         delete offers[index];
         freeIndexes.push(index);
-        for (uint16 i = 0; i < accountOffers[_msgSender()].length; i++) {
-            if (accountOffers[_msgSender()][i] == index) {
-                // prettier-ignore
-                accountOffers[_msgSender()][i] = accountOffers[_msgSender()][accountOffers[_msgSender()].length - 1];
-                accountOffers[_msgSender()].pop();
-                break;
-            }
-        }
+        heapOffer.deleteNode(token, tokenId, index);
 
         TokenUtils.transferERC20(_msgSender(), offers[index].price);
 
@@ -112,17 +117,13 @@ contract Offers is Store, TokenUtils {
             TokenUtils.transferERC1155(offers[index].token, _msgSender(), offers[index].buyer, offers[index].tokenId, 1);
         }
 
+        address token = offers[index].token;
+        uint256 tokenId = offers[index].tokenId;
+        accountOffers[token][tokenId][offers[index].buyer] = false;
+
         delete offers[index];
         freeIndexes.push(index);
-        // prettier-ignore
-        for (uint256 i = 0;  i < accountOffers[offers[index].buyer].length; i++) {
-            if (accountOffers[offers[index].buyer][i] == index) {
-                // prettier-ignore
-                accountOffers[offers[index].buyer][i] = accountOffers[offers[index].buyer][accountOffers[offers[index].buyer].length - 1];
-                accountOffers[offers[index].buyer].pop();
-                break;
-            }
-        }
+        heapOffer.deleteNode(token, tokenId, index);
 
         TokenUtils.transferERC20(_msgSender(), toSpend);
 

@@ -43,7 +43,7 @@ interface IHeap {
 
     function getRoleAdmin(bytes32 role) external view returns (bytes32);
 
-    function getSmallest(
+    function getBestAssets(
         address token,
         uint256 tokenId,
         uint8 length

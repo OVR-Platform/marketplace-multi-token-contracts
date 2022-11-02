@@ -15,6 +15,8 @@ describe("Offers - TEST", async () => {
     Root,
     heap,
     Heap,
+    heapOffers,
+    HeapOffers,
     ovrLand,
     OVRLand,
     assets3D,
@@ -22,12 +24,11 @@ describe("Offers - TEST", async () => {
 
   beforeEach(async () => {
     Root = await ethers.getContractFactory("Root");
-    Heap = await ethers.getContractFactory("Heap");
+    Heap = await ethers.getContractFactory("HeapSales");
+    HeapOffers = await ethers.getContractFactory("HeapOffers");
     Token = await ethers.getContractFactory("Token"); // ERC20
     OVRLand = await ethers.getContractFactory("OVRLand"); // ERC721
     Assets3D = await ethers.getContractFactory("Assets3D"); // ERC721
-
-    Heap = await ethers.getContractFactory("Heap");
 
     [
       owner, // 50 ether
@@ -63,6 +64,11 @@ describe("Offers - TEST", async () => {
       await heap.deployed();
       console.debug("\t\t\tHeap deployed to:", heap.address);
     });
+    it("Should deploy heapOffers", async () => {
+      heapOffers = await HeapOffers.deploy();
+      await heapOffers.deployed();
+      console.debug("\t\t\tHeapOffers deployed to:", heapOffers.address);
+    });
     it("Should deploy OVRLand", async () => {
       ovrLand = await OVRLand.deploy();
       await ovrLand.deployed();
@@ -80,12 +86,14 @@ describe("Offers - TEST", async () => {
         500, // FEE PERCENTAGE
         token.address,
         heap.address,
+        heapOffers.address,
         1,
         1,
       ]);
       await root.deployed();
 
       // Add Heap Admin Role to Root
+      await heapOffers.addAdminRole(root.address);
       await heap.addAdminRole(root.address);
       console.log("\t\t\tRoot deployed to:", root.address);
       currentBlock = await time.latest();
@@ -93,6 +101,9 @@ describe("Offers - TEST", async () => {
         "\t\t\t",
         Utils.displayTime(Number(currentBlock.toString()))
       );
+      //add store to heap
+      await heap.addStore(root.address);
+      console.log("\t\t\tRoot added to Heap");
     });
   });
 
@@ -252,7 +263,101 @@ describe("Offers - TEST", async () => {
         "O08"
       );
     });
+    //make offer for asset id 56
+    it("PASS - Addr10 place Offer for tokenId 56, price 5 OVR", async () => {
+      const offeredPrice = "5";
 
-    // Il tutto si potrebbe considerare valido anche per ERC721
+      const addr10BalanceBefore = await token.balanceOf(addr10.address);
+      const rootBalanceBefore = await token.balanceOf(root.address);
+
+      await root
+        .connect(addr10)
+        .createOffer(assets3D.address, 56, Utils.toWei(offeredPrice));
+
+      const offerNumber = await root.offersCount.call();
+      const offerIndexNext = Number(offerNumber.toString());
+      console.debug("OfferIndexNext", offerIndexNext);
+
+      // Get Offer using index
+      const offer = await root.offers(Number(offerIndexNext) - 1);
+      Utils.offerLogger(offer);
+
+      const addr10BalanceAfter = await token.balanceOf(addr10.address);
+      const rootBalanceAfter = await token.balanceOf(root.address);
+
+      expect(Number(Utils.fromWei(addr10BalanceAfter))).to.be.equal(
+        Number(Utils.fromWei(addr10BalanceBefore)) - Number(offeredPrice)
+      );
+
+      expect(Number(Utils.fromWei(rootBalanceAfter))).to.be.equal(
+        Number(Utils.fromWei(rootBalanceBefore)) + Number(offeredPrice)
+      );
+    });
+    //make offer for asset id 56
+    it("PASS - Addr11 place Offer for tokenId 56, price 10 OVR", async () => {
+      const offeredPrice = "10";
+
+      const addr11BalanceBefore = await token.balanceOf(addr11.address);
+      const rootBalanceBefore = await token.balanceOf(root.address);
+
+      await root
+        .connect(addr11)
+        .createOffer(assets3D.address, 56, Utils.toWei(offeredPrice));
+
+      const offerNumber = await root.offersCount.call();
+      const offerIndexNext = Number(offerNumber.toString());
+      console.debug("OfferIndexNext", offerIndexNext);
+
+      // Get Offer using index
+      const offer = await root.offers(Number(offerIndexNext) - 1);
+      Utils.offerLogger(offer);
+
+      const addr11BalanceAfter = await token.balanceOf(addr11.address);
+      const rootBalanceAfter = await token.balanceOf(root.address);
+
+      expect(Number(Utils.fromWei(addr11BalanceAfter))).to.be.equal(
+        Number(Utils.fromWei(addr11BalanceBefore)) - Number(offeredPrice)
+      );
+
+      expect(Number(Utils.fromWei(rootBalanceAfter))).to.be.equal(
+        Number(Utils.fromWei(rootBalanceBefore)) + Number(offeredPrice)
+      );
+    });
+    //make offer for asset id 56
+    it("PASS - Addr1 place Offer for tokenId 56, price 15 OVR", async () => {
+      const offeredPrice = "15";
+
+      const addr1BalanceBefore = await token.balanceOf(addr1.address);
+      const rootBalanceBefore = await token.balanceOf(root.address);
+
+      await root
+        .connect(addr1)
+        .createOffer(assets3D.address, 56, Utils.toWei(offeredPrice));
+
+      const offerNumber = await root.offersCount.call();
+      const offerIndexNext = Number(offerNumber.toString());
+      console.debug("OfferIndexNext", offerIndexNext);
+
+      // Get Offer using index
+      const offer = await root.offers(Number(offerIndexNext) - 1);
+      Utils.offerLogger(offer);
+
+      const addr1BalanceAfter = await token.balanceOf(addr1.address);
+      const rootBalanceAfter = await token.balanceOf(root.address);
+
+      expect(Number(Utils.fromWei(addr1BalanceAfter))).to.be.equal(
+        Number(Utils.fromWei(addr1BalanceBefore)) - Number(offeredPrice)
+      );
+
+      expect(Number(Utils.fromWei(rootBalanceAfter))).to.be.equal(
+        Number(Utils.fromWei(rootBalanceBefore)) + Number(offeredPrice)
+      );
+    });
+    //view offer by asset
+    it("PASS - View Offers for assetId 56", async () => {
+      const offers = await root.viewOffersByAsset(assets3D.address, 56, 6);
+      console.debug("Offers", offers);
+      expect(offers.length).to.be.equal(3);
+    });
   });
 });

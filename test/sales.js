@@ -15,6 +15,8 @@ describe("Sales - TEST", async () => {
     Root,
     heap,
     Heap,
+    heapOffers,
+    HeapOffers,
     ovrLand,
     OVRLand,
     assets3D,
@@ -22,12 +24,11 @@ describe("Sales - TEST", async () => {
 
   beforeEach(async () => {
     Root = await ethers.getContractFactory("Root");
-    Heap = await ethers.getContractFactory("Heap");
+    Heap = await ethers.getContractFactory("HeapSales");
+    HeapOffers = await ethers.getContractFactory("HeapOffers");
     Token = await ethers.getContractFactory("Token"); // ERC20
     OVRLand = await ethers.getContractFactory("OVRLand"); // ERC721
     Assets3D = await ethers.getContractFactory("Assets3D"); // ERC721
-
-    Heap = await ethers.getContractFactory("Heap");
 
     [
       owner, // 50 ether
@@ -63,6 +64,11 @@ describe("Sales - TEST", async () => {
       await heap.deployed();
       console.debug("\t\t\tHeap deployed to:", heap.address);
     });
+    it("Should deploy heapOffers", async () => {
+      heapOffers = await HeapOffers.deploy();
+      await heapOffers.deployed();
+      console.debug("\t\t\tHeapOffers deployed to:", heapOffers.address);
+    });
     it("Should deploy OVRLand", async () => {
       ovrLand = await OVRLand.deploy();
       await ovrLand.deployed();
@@ -80,12 +86,14 @@ describe("Sales - TEST", async () => {
         500, // FEE PERCENTAGE
         token.address,
         heap.address,
+        heapOffers.address,
         1,
         1,
       ]);
       await root.deployed();
 
       // Add Heap Admin Role to Root
+      await heapOffers.addAdminRole(root.address);
       await heap.addAdminRole(root.address);
       console.log("\t\t\tRoot deployed to:", root.address);
       currentBlock = await time.latest();
@@ -162,6 +170,7 @@ describe("Sales - TEST", async () => {
       await assets3D.connect(addr14).setApprovalForAll(root.address, true);
       await assets3D.connect(addr15).setApprovalForAll(root.address, true);
       await assets3D.connect(addr16).setApprovalForAll(root.address, true);
+      await assets3D.connect(addr17).setApprovalForAll(root.address, true);
 
       await ovrLand.connect(addr1).setApprovalForAll(root.address, true);
       await ovrLand.connect(addr2).setApprovalForAll(root.address, true);
@@ -394,7 +403,12 @@ describe("Sales - TEST", async () => {
     it("Should PASS transferFrom() 5 item id 20 to addr19", async () => {
       await assets3D
         .connect(addr9)
-        .safeTransferFrom(addr9.address, addr17.address, 20, 5, "0x");
+        .safeTransferFrom(addr9.address, addr17.address, 20, 2, "0x");
+    });
+    it("Should PASS transferFrom() 5 item id 20 to addr19", async () => {
+      await assets3D
+        .connect(addr9)
+        .safeTransferFrom(addr9.address, addr16.address, 20, 3, "0x");
     });
     it("Should PASS viewSmallestId() id20", async () => {
       const smallestId = await root.viewSalesByAsset(assets3D.address, 20, 6);
@@ -405,8 +419,38 @@ describe("Sales - TEST", async () => {
         .connect(addr5)
         .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
     });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr5)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr17)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr17)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
+    });
+    it("Should PASS transferFrom() 5 item id 20 to addr19", async () => {
+      await assets3D
+        .connect(addr17)
+        .safeTransferFrom(addr17.address, addr1.address, 20, 2, "0x");
+    });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr16)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [2], 0);
+    });
+    it("Should PASS createSale() BASIC Order", async () => {
+      await root
+        .connect(addr16)
+        .createSale(assets3D.address, [20], Utils.toWei("0.01"), [1], 0);
+    });
     it("Should PASS viewSmallestId() id20", async () => {
-      const smallestId = await root.viewSalesByAsset(assets3D.address, 20, 6);
+      const smallestId = await root.viewSalesByAsset(assets3D.address, 20, 3);
       console.log("smallestId", smallestId);
     });
   });

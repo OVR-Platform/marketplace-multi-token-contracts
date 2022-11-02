@@ -15,6 +15,8 @@ describe("All - TEST", async () => {
     Root,
     heap,
     Heap,
+    heapOffers,
+    HeapOffers,
     ovrLand,
     OVRLand,
     assets3D,
@@ -22,12 +24,11 @@ describe("All - TEST", async () => {
 
   beforeEach(async () => {
     Root = await ethers.getContractFactory("Root");
-    Heap = await ethers.getContractFactory("Heap");
+    Heap = await ethers.getContractFactory("HeapSales");
+    HeapOffers = await ethers.getContractFactory("HeapOffers");
     Token = await ethers.getContractFactory("Token"); // ERC20
     OVRLand = await ethers.getContractFactory("OVRLand"); // ERC721
     Assets3D = await ethers.getContractFactory("Assets3D"); // ERC721
-
-    Heap = await ethers.getContractFactory("Heap");
 
     [
       owner, // 50 ether
@@ -63,6 +64,11 @@ describe("All - TEST", async () => {
       await heap.deployed();
       console.debug("\t\t\tHeap deployed to:", heap.address);
     });
+    it("Should deploy heapOffers", async () => {
+      heapOffers = await HeapOffers.deploy();
+      await heapOffers.deployed();
+      console.debug("\t\t\tHeapOffers deployed to:", heapOffers.address);
+    });
     it("Should deploy OVRLand", async () => {
       ovrLand = await OVRLand.deploy();
       await ovrLand.deployed();
@@ -80,16 +86,24 @@ describe("All - TEST", async () => {
         500, // FEE PERCENTAGE
         token.address,
         heap.address,
+        heapOffers.address,
         1,
         1,
       ]);
       await root.deployed();
+      console.log("\t\t\tRoot deployed to:", root.address);
+      // Add Heap Admin Role to Root
+      await heapOffers.addAdminRole(root.address);
+      await heap.addAdminRole(root.address);
       console.log("\t\t\tRoot deployed to:", root.address);
       currentBlock = await time.latest();
       console.debug(
         "\t\t\t",
         Utils.displayTime(Number(currentBlock.toString()))
       );
+      //add store to heap
+      await heap.addStore(root.address);
+      console.log("\t\t\tRoot added to Heap");
     });
   });
 

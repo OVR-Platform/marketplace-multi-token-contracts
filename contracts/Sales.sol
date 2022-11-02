@@ -18,10 +18,10 @@ import {ItemType, OrderType} from "../libraries/Enums.sol";
 contract Sales is Store, TokenUtils {
     function __Sales_init(address _heap, uint256 _count) internal {
         salesCount = _count;
-        heap = IHeap(_heap);
+        heapSale = IHeap(_heap);
     }
 
-    IHeap public heap;
+    IHeap public heapSale;
 
     function viewSalesByAsset(
         address token,
@@ -34,7 +34,11 @@ contract Sales is Store, TokenUtils {
             return order;
         }
 
-        uint256[] memory indexes = heap.getSmallest(token, tokenId, amount);
+        uint256[] memory indexes = heapSale.getBestAssets(
+            token,
+            tokenId,
+            amount
+        );
         Sale[] memory orders = new Sale[](indexes.length);
 
         for (uint256 i = 0; i < indexes.length; i++) {
@@ -84,7 +88,7 @@ contract Sales is Store, TokenUtils {
         if (assetType(token) == ItemType.ERC721) amount[0] = 1;
         if (orderType == OrderType.BASIC) {
             require(tokenId.length == 1, "S02");
-            // if ERC721 save index in saleIndexes721 else save order in heap
+            // if ERC721 save index in saleIndexes721 else save order in heapSale
             if (assetType(token) == ItemType.ERC721) {
                 require(
                     saleIndexes721[token][tokenId[0]] == 0 ||
@@ -95,7 +99,7 @@ contract Sales is Store, TokenUtils {
 
                 saleIndexes721[token][tokenId[0]] = index;
             } else {
-                heap.insertNode(token, tokenId[0], price, index);
+                heapSale.insertNode(token, tokenId[0], price, index);
             }
         } else {
             // Order Type check
@@ -127,9 +131,9 @@ contract Sales is Store, TokenUtils {
             // prettier-ignore
             delete saleIndexes721[sales[index].token][sales[index].tokenId[0]];
         } else {
-            //delete from heap
+            //delete from heapSale
             // prettier-ignore
-            heap.deleteNode(sales[index].token, sales[index].tokenId[0], index);
+            heapSale.deleteNode(sales[index].token, sales[index].tokenId[0], index);
             delete sales[index];
         }
 

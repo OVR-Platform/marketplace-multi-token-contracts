@@ -12,12 +12,13 @@ contract Root is UUPSUpgradeable, Offers, Auctions, Sales {
         address _feeReceiver,
         uint16 _feePercentage,
         address _token,
-        address _heapAddress,
+        address _heapSalesAddress,
+        address _heapOffersAddress,
         uint256 _offersCount,
         uint256 _salesCount
     ) external initializer {
-        __Offers_init(_offersCount);
-        __Sales_init(_heapAddress, _salesCount);
+        __Offers_init(_offersCount, _heapOffersAddress);
+        __Sales_init(_heapSalesAddress, _salesCount);
         __Store_init(_feeReceiver, _feePercentage);
         __TokenUtils_init(_token);
     }

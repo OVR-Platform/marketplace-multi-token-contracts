@@ -8,7 +8,18 @@ const Utils = require("./utils");
 
 const feeReceiver = "0x00000000000B186EbeF1AC9a27C7eB16687ac2A9";
 const feePercent = 500;
-let token, Token, root, Root, heap, Heap, erc1155, Erc1155, erc721, Erc721;
+let token,
+  Token,
+  root,
+  Root,
+  heap,
+  Heap,
+  heapOffers,
+  HeapOffers,
+  erc1155,
+  Erc1155,
+  erc721,
+  Erc721;
 
 // ONLY AUCTIONS TESTS
 
@@ -34,12 +45,21 @@ describe("Auctions - TEST", () => {
       });
       //should deploy heap
       it("Should deploy heap", async () => {
-        Heap = await ethers.getContractFactory("Heap");
+        Heap = await ethers.getContractFactory("HeapSales");
         //deploy without proxy
 
         heap = await Heap.deploy();
         await heap.deployed();
         console.debug("\t\t\tHeap deployed to:", heap.address);
+      });
+
+      it("Should deploy heap", async () => {
+        HeapOffers = await ethers.getContractFactory("HeapOffers");
+        //deploy without proxy
+
+        heapOffers = await HeapOffers.deploy();
+        await heapOffers.deployed();
+        console.debug("\t\t\tHeapOffers deployed to:", heapOffers.address);
       });
       //should deploy erc1155
       it("Should deploy erc1155", async () => {
@@ -69,11 +89,23 @@ describe("Auctions - TEST", () => {
           feePercent,
           token.address,
           heap.address,
+          heapOffers.address,
           1,
           1,
         ]);
         await root.deployed();
-        console.log("Root deployed to:", root.address);
+        // Add Heap Admin Role to Root
+        await heapOffers.addAdminRole(root.address);
+        await heap.addAdminRole(root.address);
+        console.log("\t\t\tRoot deployed to:", root.address);
+        currentBlock = await time.latest();
+        console.debug(
+          "\t\t\t",
+          Utils.displayTime(Number(currentBlock.toString()))
+        );
+        //add store to heap
+        await heap.addStore(root.address);
+        console.log("\t\t\tRoot added to Heap");
       });
       //should allow erc1155
       it("Should allow erc1155", async () => {
