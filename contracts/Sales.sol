@@ -68,7 +68,7 @@ contract Sales is Store, TokenUtils {
         uint256 price,
         uint256[] memory amount,
         OrderType orderType
-    ) external whenNotPaused {
+    ) external whenNotPaused nonReentrant {
         onlyAllowedAddress(token);
 
         bool onAuction_ = auctionStarted[token][tokenId[0]];
@@ -118,7 +118,7 @@ contract Sales is Store, TokenUtils {
      * @dev Cancel a sell order
      * @param index index of order to cancel
      */
-    function cancelSale(uint256 index) external {
+    function cancelSale(uint256 index) external nonReentrant {
         require(sales[index].seller == _msgSender(), "S15");
 
         _cancelSale(index);
@@ -146,7 +146,11 @@ contract Sales is Store, TokenUtils {
      * @param amount the amount wanted to buy (0 for all, if ERC721 it's useless)
      */
 
-    function buy(uint256 index, uint256 amount) external whenNotPaused {
+    function buy(uint256 index, uint256 amount)
+        external
+        whenNotPaused
+        nonReentrant
+    {
         require(sales[index].seller != _msgSender(), "O02");
         require(sales[index].seller != address(0), "O03");
         for (uint256 i = 0; i < sales[index].tokenId.length; i++) {
@@ -171,18 +175,20 @@ contract Sales is Store, TokenUtils {
                     IERC1155Upgradeable(sales[index].token).balanceOf(
                         sales[index].seller,
                         sales[index].tokenId[i]
-                    ) <= sales[index].amount[i]
+                    ) < sales[index].amount[i]
                 ) {
                     revert("O06");
                 }
             }
 
-            uint256[] memory newAmount = new uint256[](1);
+            uint256[] memory newAmount = new uint256[](
+                sales[index].tokenId.length
+            );
 
             if (amount != 0) {
-                newAmount[0] = amount;
                 for (uint256 i = 0; i < sales[index].tokenId.length; i++) {
                     sales[index].amount[i] -= amount;
+                    newAmount[i] = amount;
                 }
                 toSpend = amount * sales[index].price;
             } else {
