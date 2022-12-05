@@ -34,8 +34,7 @@ contract Store is Allowed, ReentrancyGuardUpgradeable, PausableUpgradeable {
     uint256 public offersCount;
     mapping(uint256 => Offer) public offers;
     //contract => tokenId => address = exists? true/false
-    mapping(address => mapping(uint256 => mapping(address => bool)))
-        public accountOffers;
+    mapping(address => mapping(uint256 => mapping(address => bool))) public accountOffers;
     uint256[] public freeIndexes;
 
     function assetType(address token) public view virtual returns (ItemType) {

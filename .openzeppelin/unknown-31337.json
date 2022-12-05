@@ -63,17 +63,17 @@
     },
     {
       "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
-      "txHash": "0x0a38a5087cbb2328d1c9fd1b02e13451575b6f98198f556fe107c4e52a2e3593",
+      "txHash": "0xaac29c96061aa188f713174c75e7aaa8469fba31bb50d2af1209f43687ea6906",
       "kind": "uups"
     },
     {
       "address": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
-      "txHash": "0x9a3f318e4a687243da5d2c8b4038cd53256cdf6a4be09ae09e94788804a96b9b",
+      "txHash": "0xb509870c41872aed4ee735146121aa1b30fe121699093304e4d9b751667d8d1c",
       "kind": "uups"
     },
     {
       "address": "0x8f86403A4DE0BB5791fa46B8e795C547942fE4Cf",
-      "txHash": "0x92b03dbe9a3b4a5ea688b980f8e5d3bd4d321fba98582bc8aeb7bb846c80d6de",
+      "txHash": "0x240d268b0327e024f0fface5257d02bbea543be24dcccc36f8505111d2bddad6",
       "kind": "uups"
     },
     {
@@ -1189,9 +1189,9 @@
         }
       }
     },
-    "3df7e80151013c4482403df5b6c4f6989eeeb733d14db307dd1d3d0583112ea9": {
+    "a5dbf0012be45dea440ab4a7f9f92a88d503ebf5601edeca3eaf453518819400": {
       "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0x1134072a0a69f49621adef6aa4c696232ca801eae11a39eefbb02f6833f55f22",
+      "txHash": "0xfb2fd48f18382199bb5bce5ab478bf5bc3814b594e7e592e6cc88772fd8a740c",
       "layout": {
         "solcVersion": "0.8.17",
         "storage": [
@@ -1264,7 +1264,7 @@
             "label": "allowedAddresses",
             "offset": 0,
             "slot": "251",
-            "type": "t_mapping(t_address,t_struct(AllowedAddress)14139_storage)",
+            "type": "t_mapping(t_address,t_struct(AllowedAddress)8192_storage)",
             "contract": "Allowed",
             "src": "contracts/Allowed.sol:10"
           },
@@ -1320,7 +1320,7 @@
             "label": "bidOrders",
             "offset": 0,
             "slot": "354",
-            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(Auction)14195_storage))",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(Auction)8248_storage))",
             "contract": "Store",
             "src": "contracts/Store.sol:24"
           },
@@ -1344,7 +1344,7 @@
             "label": "sales",
             "offset": 0,
             "slot": "357",
-            "type": "t_mapping(t_uint256,t_struct(Sale)14159_storage)",
+            "type": "t_mapping(t_uint256,t_struct(Sale)8212_storage)",
             "contract": "Store",
             "src": "contracts/Store.sol:29"
           },
@@ -1376,7 +1376,7 @@
             "label": "offers",
             "offset": 0,
             "slot": "361",
-            "type": "t_mapping(t_uint256,t_struct(Offer)14172_storage)",
+            "type": "t_mapping(t_uint256,t_struct(Offer)8225_storage)",
             "contract": "Store",
             "src": "contracts/Store.sol:35"
           },
@@ -1394,7 +1394,7 @@
             "slot": "363",
             "type": "t_array(t_uint256)dyn_storage",
             "contract": "Store",
-            "src": "contracts/Store.sol:38"
+            "src": "contracts/Store.sol:39"
           },
           {
             "label": "OVRToken",
@@ -1408,7 +1408,7 @@
             "label": "heapOffer",
             "offset": 0,
             "slot": "365",
-            "type": "t_contract(IHeap)13371",
+            "type": "t_contract(IHeap)7424",
             "contract": "Offers",
             "src": "contracts/Offers.sol:14"
           },
@@ -1416,9 +1416,9 @@
             "label": "heapSale",
             "offset": 0,
             "slot": "366",
-            "type": "t_contract(IHeap)13371",
+            "type": "t_contract(IHeap)7424",
             "contract": "Sales",
-            "src": "contracts/Sales.sol:25"
+            "src": "contracts/Sales.sol:24"
           }
         ],
         "types": {
@@ -1426,7 +1426,7 @@
             "label": "address",
             "numberOfBytes": "20"
           },
-          "t_array(t_struct(Bidder)14202_storage)dyn_storage": {
+          "t_array(t_struct(Bidder)8255_storage)dyn_storage": {
             "label": "struct Bidder[]",
             "numberOfBytes": "32"
           },
@@ -1450,11 +1450,11 @@
             "label": "bytes32",
             "numberOfBytes": "32"
           },
-          "t_contract(IHeap)13371": {
+          "t_contract(IHeap)7424": {
             "label": "contract IHeap",
             "numberOfBytes": "20"
           },
-          "t_enum(ItemType)13825": {
+          "t_enum(ItemType)7878": {
             "label": "enum ItemType",
             "members": [
               "ERC721",
@@ -1462,7 +1462,7 @@
             ],
             "numberOfBytes": "1"
           },
-          "t_enum(OrderType)13828": {
+          "t_enum(OrderType)7881": {
             "label": "enum OrderType",
             "members": [
               "BASIC",
@@ -1482,7 +1482,7 @@
             "label": "mapping(address => mapping(uint256 => mapping(address => bool)))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_mapping(t_uint256,t_struct(Auction)14195_storage))": {
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(Auction)8248_storage))": {
             "label": "mapping(address => mapping(uint256 => struct Auction))",
             "numberOfBytes": "32"
           },
@@ -1490,7 +1490,7 @@
             "label": "mapping(address => mapping(uint256 => uint256))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(AllowedAddress)14139_storage)": {
+          "t_mapping(t_address,t_struct(AllowedAddress)8192_storage)": {
             "label": "mapping(address => struct AllowedAddress)",
             "numberOfBytes": "32"
           },
@@ -1510,15 +1510,15 @@
             "label": "mapping(uint256 => mapping(address => bool))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(Auction)14195_storage)": {
+          "t_mapping(t_uint256,t_struct(Auction)8248_storage)": {
             "label": "mapping(uint256 => struct Auction)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(Offer)14172_storage)": {
+          "t_mapping(t_uint256,t_struct(Offer)8225_storage)": {
             "label": "mapping(uint256 => struct Offer)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(Sale)14159_storage)": {
+          "t_mapping(t_uint256,t_struct(Sale)8212_storage)": {
             "label": "mapping(uint256 => struct Sale)",
             "numberOfBytes": "32"
           },
@@ -1526,7 +1526,7 @@
             "label": "mapping(uint256 => uint256)",
             "numberOfBytes": "32"
           },
-          "t_struct(AllowedAddress)14139_storage": {
+          "t_struct(AllowedAddress)8192_storage": {
             "label": "struct AllowedAddress",
             "members": [
               {
@@ -1537,7 +1537,7 @@
               },
               {
                 "label": "tokenType",
-                "type": "t_enum(ItemType)13825",
+                "type": "t_enum(ItemType)7878",
                 "offset": 20,
                 "slot": "0"
               },
@@ -1550,7 +1550,7 @@
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(Auction)14195_storage": {
+          "t_struct(Auction)8248_storage": {
             "label": "struct Auction",
             "members": [
               {
@@ -1561,7 +1561,7 @@
               },
               {
                 "label": "Bidders",
-                "type": "t_array(t_struct(Bidder)14202_storage)dyn_storage",
+                "type": "t_array(t_struct(Bidder)8255_storage)dyn_storage",
                 "offset": 0,
                 "slot": "1"
               },
@@ -1610,7 +1610,7 @@
             ],
             "numberOfBytes": "288"
           },
-          "t_struct(Bidder)14202_storage": {
+          "t_struct(Bidder)8255_storage": {
             "label": "struct Bidder",
             "members": [
               {
@@ -1634,7 +1634,7 @@
             ],
             "numberOfBytes": "96"
           },
-          "t_struct(Offer)14172_storage": {
+          "t_struct(Offer)8225_storage": {
             "label": "struct Offer",
             "members": [
               {
@@ -1694,7 +1694,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(Sale)14159_storage": {
+          "t_struct(Sale)8212_storage": {
             "label": "struct Sale",
             "members": [
               {
@@ -1729,7 +1729,7 @@
               },
               {
                 "label": "orderType",
-                "type": "t_enum(OrderType)13828",
+                "type": "t_enum(OrderType)7881",
                 "offset": 0,
                 "slot": "5"
               },

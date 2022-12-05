@@ -80,18 +80,17 @@ contract Offers is Store, TokenUtils {
      * @dev Delete a buy order
      * @param index the index of the buy order
      */
-    function deleteOffer(uint256 index) external {
+    function deleteOffer(uint256 index) external nonReentrant {
         buyOrderExist(index);
         require(offers[index].buyer == _msgSender(), "O08");
         address token = offers[index].token;
         uint256 tokenId = offers[index].tokenId;
         accountOffers[token][tokenId][_msgSender()] = false;
+        TokenUtils.transferERC20(_msgSender(), offers[index].price);
 
         delete offers[index];
         freeIndexes.push(index);
         heapOffer.deleteNode(token, tokenId, index);
-
-        TokenUtils.transferERC20(_msgSender(), offers[index].price);
 
         emit Events.OfferDeleted(_msgSender(), index);
     }
@@ -101,10 +100,12 @@ contract Offers is Store, TokenUtils {
      * @param index the index of the buy order
      */
     function fulfillOffer(uint256 index) external nonReentrant whenNotPaused {
+        emit Events.OfferAccepted(index, _msgSender(), _now());
         buyOrderExist(index);
         // prettier-ignore
         uint256 fees = (offers[index].price * fee) / 10000;
         uint256 toSpend = offers[index].price - fees;
+
         // prettier-ignore
         if (allowedAddresses[offers[index].token].tokenType == ItemType.ERC721) {
             //token must be not on Auction

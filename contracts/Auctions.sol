@@ -153,7 +153,10 @@ contract Auctions is Store, TokenUtils {
         emit Events.AuctionEnded(bidOrders[token][tokenId].seller, token, tokenId, bidOrders[token][tokenId].price);
     }
 
-    function cancelAuction(address token, uint256 tokenId) external {
+    function cancelAuction(address token, uint256 tokenId)
+        external
+        nonReentrant
+    {
         onlyAllowedAddress(token);
 
         AuctionsUtils.cancelAuctionRequires(

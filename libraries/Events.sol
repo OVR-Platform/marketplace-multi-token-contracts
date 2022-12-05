@@ -77,4 +77,10 @@ library Events {
         uint256[] indexed tokenId,
         uint256 indexed indexOrder
     );
+
+    event OfferAccepted(
+        uint256 indexed indexOrder,
+        address indexed seller,
+        uint256 indexed timestamp
+    );
 }
